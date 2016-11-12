@@ -1,0 +1,17 @@
+{
+    "debug_mode": true, // 
+    "database_type": " ", // mongodb OR mysql OR postgres
+    "userdb": "",
+    "database": "",
+    "passworddb": " ",
+    "port": "5400",
+    "connections": "100",
+    "host": " ",
+    "path": "mongodb://localhost/basedb",
+    "limittimeconnect": "30000",
+    "enable_api": "true",
+    "version_api": "v1",
+    "prefix_enable": true, // true OR false    
+    "prefix_name": "api" //     e.x api.localhost.com
+
+}

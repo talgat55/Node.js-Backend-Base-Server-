@@ -1,11 +1,58 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('static-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+import express from 'express';
+import path from 'path';
+import config from "./config/config.json"
+import favicon from 'static-favicon';
+import logger from 'morgan';
+import cookieParser from 'cookie-parser';
+import bodyParser from 'body-parser';
 import db from "./db/db.js"
+import apiRouters from "./routers/api.js"
 
+app.use(favicon());
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// config.enable_api == "true"
+// prefix 
+if (config.prefix_enable == "true") {
+
+    var subdomainOptions = {
+        base: config.host
+    };
+
+    app.use(require('subdomain')(subdomainOptions));
+
+
+    app.get(`/subdomain/${config.prefix_name}/`, (req, res, next) => {
+        ///  works -> api.localhost
+        res.send("True Subdomain");
+    });
+    app.get(`/subdomain/${config.prefix_name}/v1`, (req, res, next) => {
+        ///  works -> api.localhost/v1
+        res.send("True Subdomain 2");
+    });
+
+
+}
+
+/// Enable Api
+if (config.enable_api) {
+    let redyVersionApi = config.version_api ? config.version_api : "v1";
+    // enable prefix for api
+    if (config.prefix_enable == "true") {
+
+        app.use(`/subdomain/api/${redyVersionApi}`, apiRouters);
+
+    } else {
+
+        app.use(`api/${redyVersionApi}/`, apiRouters);
+
+    }
+
+}
 //var debug = require('debug')('my-application');
 //var app = require('../app');
 var routes = require('./routes/index');
@@ -20,29 +67,17 @@ app.set('env', process.env.mode = 'development');
 app.set('views', path.join(__dirname, 'views'));
 //app.set('view engine', 'jade');
 
-app.use(favicon());
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/users', users);
 
-/// catch 404 and forwarding to error handler
-app.use(function(req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
-});
 
 /// error handlers
 
-// development error handler
-// will print stacktrace
-if (app.get('env') === 'development') {
-    app.use(function(err, req, res, next) {
+
+if (config.debug_mode) {
+    // development error handler
+    app.use((err, req, res, next) => {
         res.status(err.status || 500);
         res.render('error', {
             message: err.message,
@@ -53,11 +88,10 @@ if (app.get('env') === 'development') {
 
     // production error handler
     // no stacktraces leaked to user
-    app.use(function(err, req, res, next) {
+    app.use((err, req, res, next) => {
         res.status(err.status || 500);
         res.render('error', {
-            message: err.message,
-            error: {}
+            message: "Somethink wrong"
         });
     });
 }
@@ -66,7 +100,7 @@ if (app.get('env') === 'development') {
 
 
 
-var server = app.listen(app.get('port'), function() {
+var server = app.listen(app.get('port'), () => {
     //debug('Express server listening on port ' + server.address().port);
     console.log('Express server listening on port ' + server.address().port);
 });
