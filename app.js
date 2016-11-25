@@ -7,6 +7,7 @@ import cookieParser from 'cookie-parser';
 import bodyParser from 'body-parser';
 import db from "./db/db.js"
 import apiRouters from "./routers/api.js"
+import cors from 'cors'
 
 app.use(favicon());
 app.use(logger('dev'));
@@ -40,6 +41,13 @@ if (config.prefix_enable == "true") {
 
 /// Enable Api
 if (config.enable_api) {
+
+
+    // enable cors
+    app.use(cors());
+
+
+    
     let redyVersionApi = config.version_api ? config.version_api : "v1";
     // enable prefix for api
     if (config.prefix_enable == "true") {
